@@ -1,12 +1,38 @@
+import fetch from 'node-fetch';
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedded Notion Page</title>
-</head>
-<body style="margin: 0; overflow: hidden;">
-    <iframe src="https://www.notion.so/lunchboxpacks/Reading-Rhythms-Values-Operating-Principles-4cc3a72e1f264a7a8a764c28d934156f?pvs=4" frameborder="0" style="width: 100%; height: 100vh;" allowfullscreen></iframe>
-</body>
-</html>
+export default async function handler(req, res) {
+    const notionUrl = 'https://www.notion.so/lunchboxpacks/Reading-Rhythms-Values-Operating-Principles-4cc3a72e1f264a7a8a764c28d934156f?pvs=4';
+
+    try {
+        const response = await fetch(notionUrl);
+        
+        if (!response.ok) {
+            return res.status(500).json({ error: 'Failed to fetch the Notion page' });
+        }
+        
+        const html = await response.text();
+        
+        // Log the fetched content for debugging
+        console.log(html);
+        
+        const embeddableHtml = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Notion Page Embed</title>
+            </head>
+            <body style="margin: 0; overflow: hidden;">
+                ${html}
+            </body>
+            </html>
+        `;
+
+        res.setHeader('Content-Type', 'text/html');
+        res.status(200).send(embeddableHtml);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch the Notion page' });
+    }
+}
